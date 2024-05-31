@@ -32,6 +32,8 @@ class FunctionSplitter(ast.NodeVisitor):
 
     def split_functions(self):
         try:
+            import os
+            import shutil
             if os.path.exists(self.script_dir):
                 shutil.rmtree(self.script_dir)
             os.makedirs(self.script_dir)
@@ -148,6 +150,7 @@ class FunctionSplitter(ast.NodeVisitor):
 
     def _create_git_branch(self, branch_name):
         try:
+            import subprocess
             subprocess.check_call(['git', 'checkout', '-b', branch_name])
         except subprocess.CalledProcessError as e:
             print(f"Error while creating git branch: {e}", file=sys.stderr)
@@ -155,6 +158,7 @@ class FunctionSplitter(ast.NodeVisitor):
 
     def _commit_changes(self, message):
         try:
+            import subprocess
             subprocess.check_call(['git', 'add', '.'])
             subprocess.check_call(['git', 'commit', '-m', message])
         except subprocess.CalledProcessError as e:
