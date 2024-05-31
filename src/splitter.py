@@ -146,7 +146,10 @@ class FunctionSplitter(ast.NodeVisitor):
                 attributes = self._handle_method_attributes(method)
                 args = ', '.join(['self'] + list(attributes))
                 call_args = ', '.join([f"self.{attr}" for attr in attributes])
-                new_method_code = f"    {method.name}({args})\n"
+                decorator_code = ""
+                for decorator in method.decorator_list:
+                    decorator_code += f"    {ast.get_source_segment(script_code, decorator)}\n"
+                new_method_code = f"{decorator_code}    def {method.name}({args}):\n        pass\n"
                 new_class_code = new_class_code.replace(ast.get_source_segment(script_code, method), new_method_code)
 
         return new_class_code
