@@ -55,6 +55,15 @@ class FunctionSplitter(ast.NodeVisitor):
             print(f"Error while splitting functions: {e}", file=sys.stderr)
             sys.exit(1)
 
+    def _get_imports_for_node(self, node):
+        used_imports = []
+        for imp in self.imports:
+            for alias in imp.names:
+                if any(alias.name in ast.dump(n) for n in ast.walk(node)):
+                    used_imports.append(ast.get_source_segment(open(self.script_path).read(), imp))
+                    break
+        return "\n".join(used_imports) + "\n"
+
     def _create_function_file(self, func, script_code):
         func_name = func.name
         func_code = ast.get_source_segment(script_code, func)
@@ -62,7 +71,7 @@ class FunctionSplitter(ast.NodeVisitor):
 
         try:
             with open(func_file_path, 'w') as func_file:
-                func_file.write(self._get_imports_code() + func_code)
+                func_file.write(self._get_imports_for_node(func) + func_code)
         except Exception as e:
             print(f"Error while creating function file {func_name}: {e}", file=sys.stderr)
             sys.exit(1)
@@ -74,7 +83,7 @@ class FunctionSplitter(ast.NodeVisitor):
 
         try:
             with open(class_file_path, 'w') as class_file:
-                class_file.write(self._get_imports_code() + class_code)
+                class_file.write(self._get_imports_for_node(cls) + class_code)
         except Exception as e:
             print(f"Error while creating class file {class_name}: {e}", file=sys.stderr)
             sys.exit(1)
