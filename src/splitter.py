@@ -126,8 +126,8 @@ class FunctionSplitter(ast.NodeVisitor):
         current_path = Path(self.script_path).resolve()
         for parent in [current_path] + list(current_path.parents):
             if (parent / ".git").exists():
-                return True
-        return False
+                return parent
+        return None
 
     def _create_git_branch(self, branch_name):
         subprocess.check_call(['git', 'checkout', '-b', branch_name])
@@ -145,7 +145,9 @@ if __name__ == "__main__":
     script_path = sys.argv[1]
     splitter = FunctionSplitter(script_path)
 
-    if splitter._is_git_repo():
+    git_repo_path = splitter._is_git_repo()
+    if git_repo_path:
+        os.chdir(git_repo_path)
         branch_name = "split-functions"
         splitter._create_git_branch(branch_name)
         splitter.split_functions()
