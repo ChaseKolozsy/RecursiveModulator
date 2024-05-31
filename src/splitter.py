@@ -67,7 +67,10 @@ class FunctionSplitter(ast.NodeVisitor):
 
     def _create_function_file(self, func, script_code):
         func_name = func.name
-        func_code = ast.get_source_segment(script_code, func)
+        func_code = self._get_imports_for_node(func)
+        for decorator in func.decorator_list:
+            func_code += ast.get_source_segment(script_code, decorator) + "\n"
+        func_code += ast.get_source_segment(script_code, func)
         func_file_path = os.path.join(self.output_dir, f"{func_name}.py")
 
         try:
@@ -79,7 +82,10 @@ class FunctionSplitter(ast.NodeVisitor):
 
     def _create_class_file(self, cls, script_code):
         class_name = cls.name
-        class_code = ast.get_source_segment(script_code, cls)
+        class_code = self._get_imports_for_node(cls)
+        for decorator in cls.decorator_list:
+            class_code += ast.get_source_segment(script_code, decorator) + "\n"
+        class_code += ast.get_source_segment(script_code, cls)
         class_file_path = os.path.join(self.output_dir, f"{class_name}.py")
 
         try:
