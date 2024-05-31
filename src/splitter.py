@@ -3,6 +3,7 @@
  import os
  import shutil
  import subprocess
+ from pathlib import Path
 
  class FunctionSplitter(ast.NodeVisitor):
      def __init__(self, script_path):
@@ -122,11 +123,11 @@
          return imports_code
 
      def _is_git_repo(self):
-         try:
-             subprocess.check_output(['git', 'status'], stderr=subprocess.STDOUT)
-             return True
-         except subprocess.CalledProcessError:
-             return False
+         current_path = Path(self.script_path).resolve()
+         for parent in [current_path] + list(current_path.parents):
+             if (parent / ".git").exists():
+                 return True
+         return False
 
      def _create_git_branch(self, branch_name):
          subprocess.check_call(['git', 'checkout', '-b', branch_name])
