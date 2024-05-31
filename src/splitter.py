@@ -1,9 +1,9 @@
 # splitter.py
- import ast
- import os
- import shutil
- import subprocess
- from pathlib import Path
+import ast
+import os
+import shutil
+import subprocess
+from pathlib import Path
 
  class FunctionSplitter(ast.NodeVisitor):
      def __init__(self, script_path):
