@@ -7,9 +7,10 @@ import subprocess
 from pathlib import Path
 
 class FunctionSplitter(ast.NodeVisitor):
-    def __init__(self, script_path):
+    def __init__(self, script_path, output_dir=None):
         self.script_path = script_path
         self.script_dir = os.path.splitext(script_path)[0]
+        self.output_dir = output_dir if output_dir else os.path.splitext(script_path)[0]
         self.functions = []
         self.classes = []
         self.imports = []
@@ -34,9 +35,9 @@ class FunctionSplitter(ast.NodeVisitor):
         try:
             import os
             import shutil
-            if os.path.exists(self.script_dir):
-                shutil.rmtree(self.script_dir)
-            os.makedirs(self.script_dir)
+            if os.path.exists(self.output_dir):
+                shutil.rmtree(self.output_dir)
+            os.makedirs(self.output_dir)
 
             with open(self.script_path, 'r') as file:
                 script_code = file.read()
@@ -67,7 +68,7 @@ class FunctionSplitter(ast.NodeVisitor):
     def _create_function_file(self, func, script_code):
         func_name = func.name
         func_code = ast.get_source_segment(script_code, func)
-        func_file_path = os.path.join(self.script_dir, f"{func_name}.py")
+        func_file_path = os.path.join(self.output_dir, f"{func_name}.py")
 
         try:
             with open(func_file_path, 'w') as func_file:
@@ -79,7 +80,7 @@ class FunctionSplitter(ast.NodeVisitor):
     def _create_class_file(self, cls, script_code):
         class_name = cls.name
         class_code = ast.get_source_segment(script_code, cls)
-        class_file_path = os.path.join(self.script_dir, f"{class_name}.py")
+        class_file_path = os.path.join(self.output_dir, f"{class_name}.py")
 
         try:
             with open(class_file_path, 'w') as class_file:
@@ -176,12 +177,13 @@ class FunctionSplitter(ast.NodeVisitor):
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) != 2:
-        print("Usage: python splitter.py <script_path>")
+    if len(sys.argv) not in [2, 3]:
+        print("Usage: python splitter.py <script_path> [output_dir]")
         sys.exit(1)
 
     script_path = sys.argv[1]
-    splitter = FunctionSplitter(script_path)
+    output_dir = sys.argv[2] if len(sys.argv) == 3 else None
+    splitter = FunctionSplitter(script_path, output_dir)
 
     git_repo_path = splitter._is_git_repo()
     if git_repo_path:
